@@ -2,11 +2,17 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import * as schema from './schema'
 
-// Supabaseの接続情報
-const connectionString = process.env.DATABASE_URL!
+const connectionURL = process.env.DATABASE_URL
 
-// PostgreSQL接続を作成
-const client = postgres(connectionString)
+if (!connectionURL) {
+  throw new Error('DATABASE_URL is not defined')
+}
 
-// Drizzle ORMインスタンスを作成
-export const db = drizzle(client, { schema })
+const client = postgres(connectionURL, {
+  prepare: false,
+})
+
+export const db = drizzle(client, {
+  schema,
+  casing: 'snake_case'
+})
