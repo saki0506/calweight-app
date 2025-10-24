@@ -52,9 +52,12 @@ export default function TestPage() {
 
         {/* Button テスト */}
         <div className="space-y-3">
-          <Button
-            className="w-full hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: '#FF9BAA' }}
+          <Button 
+            className="w-full hover:opacity-90 transition-opacity" 
+            style={{ 
+              backgroundColor: '#FF9BAA',
+              border: '2px solid #dad6d7'
+            }}
           >
             ログイン
           </Button>
