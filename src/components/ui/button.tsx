@@ -10,12 +10,21 @@ const buttonVariants = cva(
     variants: {
       variant: {
         // ピンクボタン（ユーザー登録、OK）
-        default: "bg-pink-400 text-white hover:bg-pink-500 focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2",
+        default:
+          "bg-pink-400 text-white hover:bg-pink-500 focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2",
+
         // 白背景ボタン（新規登録、ログイン）
-        outline: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2",
+        outline:
+          "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2",
+
         ghost: "hover:bg-gray-100 text-gray-700",
         link: "text-pink-400 underline-offset-4 hover:underline",
+
+        // 淡いピンクボタン
+        softPink:
+          "bg-[#FF9BAA] text-white border-2 border-[#dad6d7] hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2",
       },
+
       size: {
         default: "h-12 px-8 py-3",
         sm: "h-9 px-4",
@@ -23,6 +32,7 @@ const buttonVariants = cva(
         icon: "h-10 w-10",
       },
     },
+
     defaultVariants: {
       variant: "default",
       size: "default",
