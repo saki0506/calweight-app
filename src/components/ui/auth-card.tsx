@@ -1,14 +1,9 @@
-// src/components/ui/auth-card.tsx
-import React from 'react';
+import { PropsWithChildren } from 'react';
 
-interface AuthCardProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-export const AuthCard: React.FC<AuthCardProps> = ({ children, className = '' }) => {
+// AuthCardPropsとclassNameを削除
+export const AuthCard: React.FC<PropsWithChildren> = ({ children }) => {
   return (
-    <div className={`bg-white rounded-3xl shadow-lg p-8 w-full max-w-md ${className}`}>
+    <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-md">
       {children}
     </div>
   );
