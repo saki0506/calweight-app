@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,7 +11,7 @@ import { AuthCard } from '@/components/ui/auth-card';
 import { FormLabel } from '@/components/ui/form-label';
 import { Label } from '@/components/ui/label';
 import { useSignUp } from '@/hooks/useAuth';
-import { registerSchema, type RegisterFormData } from './schema';
+import { type RegisterFormData, registerResolver } from './schema';
 
 export function RegisterContent() {
   const router = useRouter();
@@ -24,7 +23,7 @@ export function RegisterContent() {
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+    resolver: registerResolver,
   });
 
   const onSubmit = async (data: RegisterFormData) => {
@@ -50,6 +49,7 @@ export function RegisterContent() {
                 id="email"
                 type="email"
                 placeholder="example@email.com"
+                defaultValue={process.env.NODE_ENV === 'development' ? 'test@example.com' : ''}
                 {...register('email')}
                 aria-invalid={!!errors.email}
               />
@@ -64,6 +64,7 @@ export function RegisterContent() {
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
+                defaultValue={process.env.NODE_ENV === 'development' ? 'password123' : ''}
                 {...register('password')}
                 aria-invalid={!!errors.password}
               />
