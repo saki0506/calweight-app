@@ -9,4 +9,4 @@ export const registerSchema = z.object({
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
-export const registerResolver = zodResolver(registerSchema);
+const registerResolver = zodResolver(registerSchema);

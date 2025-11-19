@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,7 +12,7 @@ import { AuthCard } from '@/components/ui/auth-card';
 import { FormLabel } from '@/components/ui/form-label';
 import { Label } from '@/components/ui/label';
 import { useSignUp } from '@/hooks/useAuth';
-import { type RegisterFormData, registerResolver } from './schema';
+import { type RegisterFormData, registerSchema } from './schema';
 
 export function RegisterContent() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export function RegisterContent() {
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormData>({
-    resolver: registerResolver,
+    resolver: zodResolver(registerSchema),
   });
 
   const onSubmit = async (data: RegisterFormData) => {
