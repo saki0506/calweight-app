@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,48 +8,63 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AuthCard } from '@/components/ui/auth-card';
 import { FormLabel } from '@/components/ui/form-label';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
 import { profileSetupSchema, type ProfileSetupFormData } from './schema';
+import { createClient } from '@/lib/supabase/client';
+import { db } from '@/db';
+import { users } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 export function ProfileSetupContent() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ProfileSetupFormData>({
+  const form = useForm<ProfileSetupFormData>({
     resolver: zodResolver(profileSetupSchema),
+    defaultValues: {
+      name: '',
+      targetWeight: '',
+    },
   });
 
   // TanStack Query mutation
   const mutation = useMutation({
     mutationFn: async (data: ProfileSetupFormData) => {
-      const response = await fetch('/api/profile/setup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      // Supabaseから現在のユーザーを取得
+      const supabase = createClient();
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
 
-      if (!response.ok) {
-        throw new Error('プロフィール更新に失敗しました');
+      if (authError || !user) {
+        throw new Error('認証されていません');
       }
 
-      return response.json();
+      // フロントエンドでデータベースを直接更新
+      const result = await db
+        .update(users)
+        .set({
+          name: data.name,
+          targetWeight: data.targetWeight,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(users.id, user.id))
+        .returning();
+
+      return result;
     },
     onSuccess: () => {
-      // 保存成功後、ダッシュボードへ遷移
       router.push('/dashboard');
-    },
-    onError: (error) => {
-      setError(error instanceof Error ? error.message : 'エラーが発生しました');
     },
   });
 
-  const onSubmit = async (data: ProfileSetupFormData) => {
-    setError(null);
+  const onSubmit = (data: ProfileSetupFormData) => {
     mutation.mutate(data);
   };
 
@@ -62,61 +76,71 @@ export function ProfileSetupContent() {
             名前、目標体重設定画面
           </h1>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-6">
-            <div className="space-y-2">
-              <FormLabel htmlFor="name">名前と目標体重を入力してください。</FormLabel>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    名前
-                  </label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="山田太郎"
-                    {...register('name')}
-                    disabled={mutation.isPending}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+              <div className="space-y-2">
+                <FormLabel>名前と目標体重を入力してください。</FormLabel>
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>名前</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="山田太郎"
+                            disabled={mutation.isPending}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {errors.name && (
-                    <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
-                  )}
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    目標体重
-                  </label>
-                  <Input
-                    id="targetWeight"
-                    type="number"
-                    placeholder="65.0"
-                    step="0.1"
-                    {...register('targetWeight')}
-                    disabled={mutation.isPending}
-                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  <FormField
+                    control={form.control}
+                    name="targetWeight"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>目標体重</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="65.0"
+                            step="0.1"
+                            disabled={mutation.isPending}
+                            className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {errors.targetWeight && (
-                    <p className="text-sm text-red-500 mt-1">{errors.targetWeight.message}</p>
-                  )}
                 </div>
               </div>
-            </div>
 
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
-            )}
+              {mutation.isError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">
+                    {mutation.error instanceof Error
+                      ? mutation.error.message
+                      : 'エラーが発生しました'}
+                  </p>
+                </div>
+              )}
 
-            <Button
-              type="submit"
-              variant="default"
-              className="w-full bg-[#FF9BAA] hover:bg-[#FF6B8A] text-gray-800 rounded-lg"
-              disabled={mutation.isPending}
-            >
-              {mutation.isPending ? '保存中...' : 'OK'}
-            </Button>
-          </form>
+              <Button
+                type="submit"
+                disabled={mutation.isPending}
+                className="w-full bg-[#FF9BAA] hover:bg-[#FF6B8A] text-gray-800 rounded-lg"
+              >
+                {mutation.isPending ? '保存中...' : 'OK'}
+              </Button>
+            </form>
+          </Form>
         </div>
       </AuthCard>
     </div>
