@@ -7,19 +7,16 @@ import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AuthCard } from '@/components/ui/auth-card';
-import { FormLabel } from '@/components/ui/form-label';
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { profileSetupSchema, type ProfileSetupFormData } from './schema';
-import { createClient } from '@/lib/supabase/client';
-import { db } from '@/db';
-import { users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { updateProfile } from '@/lib/user';
 
 export function ProfileSetupContent() {
   const router = useRouter();
@@ -34,31 +31,7 @@ export function ProfileSetupContent() {
 
   // TanStack Query mutation
   const mutation = useMutation({
-    mutationFn: async (data: ProfileSetupFormData) => {
-      // Supabaseから現在のユーザーを取得
-      const supabase = createClient();
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-
-      if (authError || !user) {
-        throw new Error('認証されていません');
-      }
-
-      // フロントエンドでデータベースを直接更新
-      const result = await db
-        .update(users)
-        .set({
-          name: data.name,
-          targetWeight: data.targetWeight,
-          updatedAt: new Date().toISOString(),
-        })
-        .where(eq(users.id, user.id))
-        .returning();
-
-      return result;
-    },
+    mutationFn: (data: ProfileSetupFormData) => updateProfile(data),
     onSuccess: () => {
       router.push('/dashboard');
     },
