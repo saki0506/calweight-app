@@ -1,40 +1,44 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AuthCard } from '@/components/ui/auth-card';
-import { FormLabel } from '@/components/ui/form-label';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { profileSetupSchema, type ProfileSetupFormData } from './schema';
+import { updateProfile } from '@/lib/user';
 
 export function ProfileSetupContent() {
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [targetWeight, setTargetWeight] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<ProfileSetupFormData>({
+    resolver: zodResolver(profileSetupSchema),
+    defaultValues: {
+      name: '',
+      targetWeight: '',
+    },
+  });
 
-    if (!name || !targetWeight) {
-      alert('名前と目標体重を入力してください');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // 後で保存処理を実装
-      console.log('Name:', name);
-      console.log('Target Weight:', targetWeight);
-
-      // 保存成功後、ダッシュボードへ遷移
+  // TanStack Query mutation
+  const mutation = useMutation({
+    mutationFn: (data: ProfileSetupFormData) => updateProfile(data),
+    onSuccess: () => {
       router.push('/dashboard');
-    } catch (err) {
-      console.error('Save error:', err);
-      alert('保存に失敗しました');
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const onSubmit = (data: ProfileSetupFormData) => {
+    mutation.mutate(data);
   };
 
   return (
@@ -45,51 +49,71 @@ export function ProfileSetupContent() {
             名前、目標体重設定画面
           </h1>
 
-          <form onSubmit={handleSubmit} className="w-full space-y-6">
-            <div className="space-y-2">
-              <FormLabel htmlFor="name">名前と目標体重を入力してください。</FormLabel>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    名前
-                  </label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="山田太郎"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    disabled={isLoading}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+              <div className="space-y-2">
+                <FormLabel>名前と目標体重を入力してください。</FormLabel>
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>名前</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="山田太郎"
+                            disabled={mutation.isPending}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    目標体重
-                  </label>
-                  <Input
-                    id="targetWeight"
-                    type="number"
-                    placeholder="65.0"
-                    step="0.1"
-                    value={targetWeight}
-                    onChange={(e) => setTargetWeight(e.target.value)}
-                    disabled={isLoading}
-                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  <FormField
+                    control={form.control}
+                    name="targetWeight"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>目標体重</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="65.0"
+                            step="0.1"
+                            disabled={mutation.isPending}
+                            className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
               </div>
-            </div>
 
-            <Button
-              type="submit"
-              variant="default"
-              className="w-full bg-[#FF9BAA] hover:bg-[#FF6B8A] text-gray-800 rounded-lg"
-              disabled={isLoading}
-            >
-              {isLoading ? '保存中...' : 'OK'}
-            </Button>
-          </form>
+              {mutation.isError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">
+                    {mutation.error instanceof Error
+                      ? mutation.error.message
+                      : 'エラーが発生しました'}
+                  </p>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={mutation.isPending}
+                className="w-full bg-[#FF9BAA] hover:bg-[#FF6B8A] text-gray-800 rounded-lg"
+              >
+                {mutation.isPending ? '保存中...' : 'OK'}
+              </Button>
+            </form>
+          </Form>
         </div>
       </AuthCard>
     </div>
