@@ -5,13 +5,13 @@ import { ProfileSetupContent } from './_components/profile-setup-content';
 
 export default async function ProfileSetupPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user } = await supabase.auth.getClaims();
 
   if (!user) {
     redirect('/login');
   }
 
-  const isComplete = await checkProfileSetup(user.id);
+  const isComplete = await checkProfileSetup(user.sub);
   if (isComplete) {
     redirect('/dashboard');
   }
