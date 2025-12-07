@@ -1,4 +1,4 @@
-// src/app/login/_components/login-content.tsx
+//src/app/login/_components/login-content.tsx
 'use client';
 
 import { useState } from 'react';
@@ -30,7 +30,7 @@ export function LoginContent() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await signIn(data);
-      router.push('/dashboard');
+      router.push('/profile-setup');
     } catch (err) {
       console.error('Login error:', err);
     }
