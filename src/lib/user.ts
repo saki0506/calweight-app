@@ -13,7 +13,7 @@ export async function updateProfile(data: {
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getClaims();
 
-  if (!authData?.claims?.sub) {
+  if (authData?.claims?.sub === undefined) {
     throw new Error('認証されていません');
   }
 
