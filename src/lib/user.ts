@@ -9,15 +9,15 @@ export async function updateProfile(data: {
   name: string;
   targetWeight: string;
 }) {
-  // Supabaseから現在のユーザーを取得（getClaims使用）
+  // Supabaseから現在のユーザーを取得
   const supabase = await createClient();
-  const { user } = await supabase.auth.getClaims();
+  const { data: authData } = await supabase.auth.getClaims();
 
-  if (!user) {
+  if (authData?.claims?.sub === undefined) {
     throw new Error('認証されていません');
   }
 
-  // フロントエンドでデータベースを直接更新
+  // データベースを更新
   const result = await db
     .update(users)
     .set({
@@ -25,7 +25,7 @@ export async function updateProfile(data: {
       targetWeight: data.targetWeight,
       updatedAt: new Date().toISOString(),
     })
-    .where(eq(users.id, user.sub))
+    .where(eq(users.id, authData.claims.sub))
     .returning();
 
   return result;
