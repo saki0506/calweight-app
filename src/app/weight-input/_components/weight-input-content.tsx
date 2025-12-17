@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useQueryState } from 'nuqs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AuthCard } from '@/components/ui/auth-card';
@@ -10,45 +12,61 @@ import { BottomNavigation, type TabId } from '@/components/ui/bottom-navigation'
 
 type ActiveField = 'weight' | 'bodyFat';
 
+type WeightFormData = {
+  weight: string;
+  bodyFat: string;
+};
+
 export function WeightInputContent() {
-  const [weight, setWeight] = useState('');
-  const [bodyFat, setBodyFat] = useState('');
   const [activeField, setActiveField] = useState<ActiveField>('weight');
-  const [activeTab, setActiveTab] = useState<TabId>('edit');
+  const [activeTab, setActiveTab] = useQueryState('tab', {
+    defaultValue: 'edit' as TabId,
+  });
   const [selectedDate] = useState(new Date());
 
+  const { watch, setValue, handleSubmit } = useForm<WeightFormData>({
+    defaultValues: {
+      weight: '',
+      bodyFat: '',
+    },
+  });
+
+  const weight = watch('weight');
+  const bodyFat = watch('bodyFat');
   const currentValue = activeField === 'weight' ? weight : bodyFat;
-  const setCurrentValue = activeField === 'weight' ? setWeight : setBodyFat;
 
   const handleInput = (digit: string) => {
     const newValue = currentValue + digit;
     if (newValue.length > 5) return;
     if (isNaN(Number(newValue))) return;
-    setCurrentValue(newValue);
+    setValue(activeField, newValue);
   };
 
   const handleDelete = () => {
-    setCurrentValue(currentValue.slice(0, -1));
+    setValue(activeField, currentValue.slice(0, -1));
   };
 
   const handleDecimal = () => {
     if (currentValue.includes('.')) return;
     if (currentValue === '') {
-      setCurrentValue('0.');
+      setValue(activeField, '0.');
     } else {
-      setCurrentValue(currentValue + '.');
+      setValue(activeField, currentValue + '.');
     }
   };
 
-  const handleSubmit = () => {
-    console.log('Submit:', { weight, bodyFat, date: selectedDate });
+  const onSubmit = (data: WeightFormData) => {
+    console.log('Submit:', { ...data, date: selectedDate });
+  };
+
+  const handleTabChange = (tab: TabId) => {
+    setActiveTab(tab);
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* メインコンテンツ */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 pb-24 md:pb-28">
-        <div className="w-full max-w-sm md:max-w-md flex flex-col gap-3 md:gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-sm md:max-w-md flex flex-col gap-3 md:gap-4">
           {/* 上部カード：日付と入力フィールド */}
           <AuthCard>
             <div className="flex flex-col gap-3 md:gap-4">
@@ -101,18 +119,17 @@ export function WeightInputContent() {
 
               {/* OKボタン */}
               <Button
-                onClick={handleSubmit}
+                type="submit"
                 className="w-full bg-[#FF9BAA] hover:bg-[#FF6B8A] text-gray-800 rounded-lg"
               >
                 OK
               </Button>
             </div>
           </AuthCard>
-        </div>
+        </form>
       </main>
 
-      {/* 下部ナビゲーション */}
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNavigation activeTab={activeTab as TabId} onTabChange={handleTabChange} />
     </div>
   );
 }
