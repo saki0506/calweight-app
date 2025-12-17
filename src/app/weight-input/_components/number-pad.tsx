@@ -1,4 +1,8 @@
-import { Delete } from 'lucide-react';
+'use client';
+
+import Keyboard from 'react-simple-keyboard';
+import 'react-simple-keyboard/build/css/index.css';
+import './number-pad.css';
 
 type NumberPadProps = {
   onInput: (digit: string) => void;
@@ -7,37 +11,26 @@ type NumberPadProps = {
 };
 
 export function NumberPad({ onInput, onDelete, onDecimal }: NumberPadProps) {
-  const keys = [
-    ['7', '8', '9'],
-    ['4', '5', '6'],
-    ['1', '2', '3'],
-    ['delete', '0', '.'],
-  ];
-
-  const handleKeyPress = (key: string) => {
-    if (key === 'delete') {
+  const handleKeyPress = (button: string) => {
+    if (button === '{bksp}') {
       onDelete();
-    } else if (key === '.') {
+    } else if (button === '.') {
       onDecimal();
     } else {
-      onInput(key);
+      onInput(button);
     }
   };
 
   return (
-    <div className="grid grid-cols-3 gap-2 md:gap-3">
-      {keys.flat().map((key, index) => (
-        <button
-          key={index}
-          type="button"
-          onClick={() => handleKeyPress(key)}
-          className="h-10 md:h-12 text-lg md:text-xl font-medium text-gray-700 bg-gray-100 rounded-lg 
-                     hover:bg-gray-200 active:bg-gray-300 transition-colors
-                     flex items-center justify-center"
-        >
-          {key === 'delete' ? <Delete className="h-4 w-4 md:h-5 md:w-5" /> : key}
-        </button>
-      ))}
-    </div>
+    <Keyboard
+      onKeyPress={handleKeyPress}
+      layout={{
+        default: ['7 8 9', '4 5 6', '1 2 3', '{bksp} 0 .'],
+      }}
+      display={{
+        '{bksp}': '⌫',
+      }}
+      theme="hg-theme-default hg-layout-numeric custom-number-pad"
+    />
   );
 }
