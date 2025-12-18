@@ -1,0 +1,50 @@
+.custom-number-pad {
+  background: transparent;
+  padding: 0;
+  width: 100%;
+}
+
+.custom-number-pad .hg-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.custom-number-pad .hg-row:last-child {
+  margin-bottom: 0;
+}
+
+.custom-number-pad .hg-button {
+  width: 100% !important;
+  height: 48px !important;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #374151;
+  background-color: #f3f4f6;
+  border-radius: 8px;
+  border: none;
+  box-shadow: none;
+  max-width: none !important;
+  flex: 1 !important;
+}
+
+.custom-number-pad .hg-button:hover {
+  background-color: #e5e7eb;
+}
+
+.custom-number-pad .hg-button:active {
+  background-color: #d1d5db;
+}
+
+@media (min-width: 768px) {
+  .custom-number-pad .hg-row {
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .custom-number-pad .hg-button {
+    height: 56px !important;
+    font-size: 1.5rem;
+  }
+}
