@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryState } from 'nuqs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,13 +10,9 @@ import { AuthCard } from '@/components/ui/auth-card';
 import { DateDisplay } from './date-display';
 import { NumberPad } from './number-pad';
 import { BottomNavigation, type TabId } from '@/components/ui/bottom-navigation';
+import { weightInputSchema, type WeightInputFormData } from './schema';
 
 type ActiveField = 'weight' | 'bodyFat';
-
-type WeightFormData = {
-  weight: string;
-  bodyFat: string;
-};
 
 export function WeightInputContent() {
   const [activeField, setActiveField] = useState<ActiveField>('weight');
@@ -24,7 +21,13 @@ export function WeightInputContent() {
   });
   const [selectedDate] = useState(new Date());
 
-  const { watch, setValue, handleSubmit } = useForm<WeightFormData>({
+  const {
+    watch,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<WeightInputFormData>({
+    resolver: zodResolver(weightInputSchema),
     defaultValues: {
       weight: '',
       bodyFat: '',
@@ -32,31 +35,32 @@ export function WeightInputContent() {
   });
 
   const weight = watch('weight');
-  const bodyFat = watch('bodyFat');
+  const bodyFat = watch('bodyFat') || '';
   const currentValue = activeField === 'weight' ? weight : bodyFat;
 
   const handleInput = (digit: string) => {
     const newValue = currentValue + digit;
     if (newValue.length > 5) return;
     if (isNaN(Number(newValue))) return;
-    setValue(activeField, newValue);
+    setValue(activeField, newValue, { shouldValidate: true });
   };
 
   const handleDelete = () => {
-    setValue(activeField, currentValue.slice(0, -1));
+    setValue(activeField, currentValue.slice(0, -1), { shouldValidate: true });
   };
 
   const handleDecimal = () => {
     if (currentValue.includes('.')) return;
     if (currentValue === '') {
-      setValue(activeField, '0.');
+      setValue(activeField, '0.', { shouldValidate: true });
     } else {
-      setValue(activeField, currentValue + '.');
+      setValue(activeField, currentValue + '.', { shouldValidate: true });
     }
   };
 
-  const onSubmit = (data: WeightFormData) => {
+  const onSubmit = (data: WeightInputFormData) => {
     console.log('Submit:', { ...data, date: selectedDate });
+    // PR3で保存処理を実装予定
   };
 
   const handleTabChange = (tab: TabId) => {
@@ -81,7 +85,11 @@ export function WeightInputContent() {
                     placeholder="体重"
                     onClick={() => setActiveField('weight')}
                     className={`pr-12 cursor-pointer ${
-                      activeField === 'weight' ? 'ring-2 ring-pink-400 border-pink-400' : ''
+                      errors.weight
+                        ? 'ring-2 ring-red-400 border-red-400'
+                        : activeField === 'weight'
+                          ? 'ring-2 ring-pink-400 border-pink-400'
+                          : ''
                     }`}
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
@@ -97,7 +105,11 @@ export function WeightInputContent() {
                     placeholder="体脂肪率"
                     onClick={() => setActiveField('bodyFat')}
                     className={`pr-12 cursor-pointer ${
-                      activeField === 'bodyFat' ? 'ring-2 ring-pink-400 border-pink-400' : ''
+                      errors.bodyFat
+                        ? 'ring-2 ring-red-400 border-red-400'
+                        : activeField === 'bodyFat'
+                          ? 'ring-2 ring-pink-400 border-pink-400'
+                          : ''
                     }`}
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
@@ -105,6 +117,22 @@ export function WeightInputContent() {
                   </span>
                 </div>
               </div>
+
+              {/* エラーメッセージ */}
+              {(errors.weight || errors.bodyFat) && (
+                <div className="flex flex-col gap-1">
+                  {errors.weight && (
+                    <p className="text-sm text-red-500 text-center">
+                      {errors.weight.message}
+                    </p>
+                  )}
+                  {errors.bodyFat && (
+                    <p className="text-sm text-red-500 text-center">
+                      {errors.bodyFat.message}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </AuthCard>
 
