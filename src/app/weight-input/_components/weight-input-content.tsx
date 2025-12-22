@@ -7,6 +7,12 @@ import { useQueryState } from 'nuqs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AuthCard } from '@/components/ui/auth-card';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
 import { DateDisplay } from './date-display';
 import { NumberPad } from './number-pad';
 import { BottomNavigation, type TabId } from '@/components/ui/bottom-navigation';
@@ -21,40 +27,65 @@ export function WeightInputContent() {
   });
   const [selectedDate] = useState(new Date());
 
-  const {
-    watch,
-    setValue,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<WeightInputFormData>({
+  const form = useForm<WeightInputFormData>({
     resolver: zodResolver(weightInputSchema),
     defaultValues: {
       weight: '',
       bodyFat: '',
     },
+    mode: 'onChange',
   });
 
-  const weight = watch('weight');
-  const bodyFat = watch('bodyFat') || '';
+  const weight = form.watch('weight');
+  const bodyFat = form.watch('bodyFat') || '';
   const currentValue = activeField === 'weight' ? weight : bodyFat;
+  const errors = form.formState.errors;
+
+  // 数字と小数点のみ許可するフィルター
+  const filterNumericInput = (value: string): string => {
+    // 数字と小数点以外を除去
+    let filtered = value.replace(/[^0-9.]/g, '');
+    // 小数点が2つ以上ある場合は最初の1つだけ残す
+    const parts = filtered.split('.');
+    if (parts.length > 2) {
+      filtered = parts[0] + '.' + parts.slice(1).join('');
+    }
+    // 最大5文字まで
+    if (filtered.length > 5) {
+      filtered = filtered.slice(0, 5);
+    }
+    return filtered;
+  };
+
+  // キーボード入力のハンドラ
+  const handleKeyboardInput = (field: ActiveField, value: string) => {
+    const filtered = filterNumericInput(value);
+    form.setValue(field, filtered);
+  };
+
+  // テンキーパッド用のsetValue関数
+  const setFieldValue = (field: ActiveField, value: string) => {
+    form.setValue(field, value);
+    form.trigger(field);
+  };
 
   const handleInput = (digit: string) => {
     const newValue = currentValue + digit;
     if (newValue.length > 5) return;
     if (isNaN(Number(newValue))) return;
-    setValue(activeField, newValue, { shouldValidate: true });
+    setFieldValue(activeField, newValue);
   };
 
   const handleDelete = () => {
-    setValue(activeField, currentValue.slice(0, -1), { shouldValidate: true });
+    setFieldValue(activeField, currentValue.slice(0, -1));
   };
 
   const handleDecimal = () => {
     if (currentValue.includes('.')) return;
     if (currentValue === '') {
-      setValue(activeField, '0.', { shouldValidate: true });
+      setFieldValue(activeField, '0.');
     } else {
-      setValue(activeField, currentValue + '.', { shouldValidate: true });
+      setFieldValue(activeField, currentValue + '.');
     }
   };
 
@@ -70,91 +101,103 @@ export function WeightInputContent() {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 flex flex-col items-center justify-center px-4 pb-24 md:pb-28">
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-sm md:max-w-md flex flex-col gap-3 md:gap-4">
-          {/* 上部カード：日付と入力フィールド */}
-          <AuthCard>
-            <div className="flex flex-col gap-3 md:gap-4">
-              <DateDisplay date={selectedDate} />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full max-w-sm md:max-w-md flex flex-col gap-3 md:gap-4">
+            {/* 上部カード：日付と入力フィールド */}
+            <AuthCard>
+              <div className="flex flex-col gap-3 md:gap-4">
+                <DateDisplay date={selectedDate} />
 
-              <div className="flex flex-col gap-2 md:gap-3">
-                {/* 体重入力 */}
-                <div className="relative">
-                  <Input
-                    value={weight}
-                    readOnly
-                    placeholder="体重"
-                    onClick={() => setActiveField('weight')}
-                    className={`pr-12 cursor-pointer ${
-                      errors.weight
-                        ? 'ring-2 ring-red-400 border-red-400'
-                        : activeField === 'weight'
-                          ? 'ring-2 ring-pink-400 border-pink-400'
-                          : ''
-                    }`}
+                <div className="flex flex-col gap-2 md:gap-3">
+                  {/* 体重入力 */}
+                  <FormField
+                    control={form.control}
+                    name="weight"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="relative">
+                          <Input
+                            {...field}
+                            placeholder="体重"
+                            inputMode="decimal"
+                            onClick={() => setActiveField('weight')}
+                            onChange={(e) => {
+                              handleKeyboardInput('weight', e.target.value);
+                              setActiveField('weight');
+                            }}
+                            className={`pr-12 ${
+                              errors.weight
+                                ? 'ring-2 ring-red-400 border-red-400'
+                                : activeField === 'weight'
+                                  ? 'ring-2 ring-pink-400 border-pink-400'
+                                  : ''
+                            }`}
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                            kg
+                          </span>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-                    kg
-                  </span>
-                </div>
 
-                {/* 体脂肪率入力 */}
-                <div className="relative">
-                  <Input
-                    value={bodyFat}
-                    readOnly
-                    placeholder="体脂肪率"
-                    onClick={() => setActiveField('bodyFat')}
-                    className={`pr-12 cursor-pointer ${
-                      errors.bodyFat
-                        ? 'ring-2 ring-red-400 border-red-400'
-                        : activeField === 'bodyFat'
-                          ? 'ring-2 ring-pink-400 border-pink-400'
-                          : ''
-                    }`}
+                  {/* 体脂肪率入力 */}
+                  <FormField
+                    control={form.control}
+                    name="bodyFat"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="relative">
+                          <Input
+                            {...field}
+                            placeholder="体脂肪率"
+                            inputMode="decimal"
+                            onClick={() => setActiveField('bodyFat')}
+                            onChange={(e) => {
+                              handleKeyboardInput('bodyFat', e.target.value);
+                              setActiveField('bodyFat');
+                            }}
+                            className={`pr-12 ${
+                              errors.bodyFat
+                                ? 'ring-2 ring-red-400 border-red-400'
+                                : activeField === 'bodyFat'
+                                  ? 'ring-2 ring-pink-400 border-pink-400'
+                                  : ''
+                            }`}
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                            %
+                          </span>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-                    %
-                  </span>
                 </div>
               </div>
+            </AuthCard>
 
-              {/* エラーメッセージ */}
-              {(errors.weight || errors.bodyFat) && (
-                <div className="flex flex-col gap-1">
-                  {errors.weight && (
-                    <p className="text-sm text-red-500 text-center">
-                      {errors.weight.message}
-                    </p>
-                  )}
-                  {errors.bodyFat && (
-                    <p className="text-sm text-red-500 text-center">
-                      {errors.bodyFat.message}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          </AuthCard>
+            {/* 下部カード：テンキーパッド + OKボタン */}
+            <AuthCard>
+              <div className="flex flex-col gap-4">
+                <NumberPad
+                  onInput={handleInput}
+                  onDelete={handleDelete}
+                  onDecimal={handleDecimal}
+                />
 
-          {/* 下部カード：テンキーパッド + OKボタン */}
-          <AuthCard>
-            <div className="flex flex-col gap-4">
-              <NumberPad
-                onInput={handleInput}
-                onDelete={handleDelete}
-                onDecimal={handleDecimal}
-              />
-
-              {/* OKボタン */}
-              <Button
-                type="submit"
-                className="w-full bg-[#FF9BAA] hover:bg-[#FF6B8A] text-gray-800 rounded-lg"
-              >
-                OK
-              </Button>
-            </div>
-          </AuthCard>
-        </form>
+                {/* OKボタン */}
+                <Button
+                  type="submit"
+                  className="w-full bg-[#FF9BAA] hover:bg-[#FF6B8A] text-gray-800 rounded-lg"
+                >
+                  OK
+                </Button>
+              </div>
+            </AuthCard>
+          </form>
+        </Form>
       </main>
 
       <BottomNavigation activeTab={activeTab as TabId} onTabChange={handleTabChange} />
