@@ -1,11 +1,8 @@
-'use client';
-
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { NuqsAdapter } from 'nuqs/adapters/next/app';  // ← 追加
-import "./globals.css";
-import { ReactNode } from "react";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import { QueryProvider } from '@/components/providers/query-provider';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,21 +14,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const queryClient = new QueryClient();
+export const metadata: Metadata = {
+  title: 'CalWeight',
+  description: '体重管理アプリ',
+};
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: ReactNode;
-}>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="ja">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#FFB6C1] min-h-screen`}
       >
-        <QueryClientProvider client={queryClient}>
-          <NuqsAdapter>{children}</NuqsAdapter>  {/* ← 変更 */}
-        </QueryClientProvider>
+        <QueryProvider>
+          <NuqsAdapter>{children}</NuqsAdapter>
+        </QueryProvider>
       </body>
     </html>
   );

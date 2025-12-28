@@ -17,6 +17,7 @@ import { DateDisplay } from './date-display';
 import { NumberPad } from './number-pad';
 import { BottomNavigation, type TabId } from '@/components/ui/bottom-navigation';
 import { weightInputSchema, type WeightInputFormData } from './schema';
+import { useSaveWeightRecord } from '@/hooks/useWeight';
 
 type ActiveField = 'weight' | 'bodyFat';
 
@@ -26,6 +27,7 @@ export function WeightInputContent() {
     defaultValue: 'edit' as TabId,
   });
   const [selectedDate] = useState(new Date());
+  const { mutate, isPending, error } = useSaveWeightRecord();
 
   const form = useForm<WeightInputFormData>({
     resolver: zodResolver(weightInputSchema),
@@ -34,6 +36,7 @@ export function WeightInputContent() {
       bodyFat: '',
     },
     mode: 'onChange',
+    shouldFocusError: false,
   });
 
   const weight = form.watch('weight');
@@ -43,30 +46,27 @@ export function WeightInputContent() {
 
   // 数字と小数点のみ許可するフィルター
   const filterNumericInput = (value: string): string => {
-    // 数字と小数点以外を除去
     let filtered = value.replace(/[^0-9.]/g, '');
-    // 小数点が2つ以上ある場合は最初の1つだけ残す
     const parts = filtered.split('.');
     if (parts.length > 2) {
       filtered = parts[0] + '.' + parts.slice(1).join('');
     }
-    // 最大5文字まで
     if (filtered.length > 5) {
       filtered = filtered.slice(0, 5);
     }
     return filtered;
   };
 
-  // キーボード入力のハンドラ
-  const handleKeyboardInput = (field: ActiveField, value: string) => {
-    const filtered = filterNumericInput(value);
-    form.setValue(field, filtered);
-  };
-
-  // テンキーパッド用のsetValue関数
+  // setValue + trigger をまとめた関数
   const setFieldValue = (field: ActiveField, value: string) => {
     form.setValue(field, value);
     form.trigger(field);
+  };
+
+  // キーボード入力のハンドラ
+  const handleKeyboardInput = (field: ActiveField, value: string) => {
+    const filtered = filterNumericInput(value);
+    setFieldValue(field, filtered);
   };
 
   const handleInput = (digit: string) => {
@@ -90,8 +90,26 @@ export function WeightInputContent() {
   };
 
   const onSubmit = (data: WeightInputFormData) => {
-    console.log('Submit:', { ...data, date: selectedDate });
-    // PR3で保存処理を実装予定
+    mutate(
+      {
+        weight: Number(data.weight),
+        fat: data.bodyFat ? Number(data.bodyFat) : null,
+        date: selectedDate.toISOString(),
+      },
+      {
+        onSuccess: () => {
+          form.reset();
+          setActiveField('weight');
+        },
+        onError: (err) => {
+          console.error('保存エラー:', err);
+        },
+      }
+    );
+  };
+
+  const onValidationError = () => {
+    // 何もしない - 現在の選択を維持
   };
 
   const handleTabChange = (tab: TabId) => {
@@ -102,7 +120,10 @@ export function WeightInputContent() {
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 flex flex-col items-center justify-center px-4 pb-24 md:pb-28">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full max-w-sm md:max-w-md flex flex-col gap-3 md:gap-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit, onValidationError)}
+            className="w-full max-w-sm md:max-w-md flex flex-col gap-3 md:gap-4"
+          >
             {/* 上部カード：日付と入力フィールド */}
             <AuthCard>
               <div className="flex flex-col gap-3 md:gap-4">
@@ -175,6 +196,13 @@ export function WeightInputContent() {
                     )}
                   />
                 </div>
+
+                {/* エラーメッセージ */}
+                {error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600">{error.message}</p>
+                  </div>
+                )}
               </div>
             </AuthCard>
 
@@ -191,8 +219,9 @@ export function WeightInputContent() {
                 <Button
                   type="submit"
                   className="w-full bg-[#FF9BAA] hover:bg-[#FF6B8A] text-gray-800 rounded-lg"
+                  disabled={isPending}
                 >
-                  OK
+                  {isPending ? '保存中...' : 'OK'}
                 </Button>
               </div>
             </AuthCard>
