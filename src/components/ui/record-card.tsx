@@ -1,6 +1,8 @@
 // src/components/ui/record-card.tsx
 import { Card } from '@/components/ui/card';
 import { EllipsisVertical } from 'lucide-react';
+import { format, isToday } from 'date-fns';
+import { ja } from 'date-fns/locale';
 
 type RecordCardProps = {
   date: Date;
@@ -9,23 +11,16 @@ type RecordCardProps = {
 };
 
 export function RecordCard({ date, weight, bodyFatPercentage }: RecordCardProps) {
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const weekDay = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
-
-  const today = new Date();
-  const isToday =
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate();
+  const formattedDate = format(date, 'M月d日', { locale: ja });
+  const weekDay = format(date, 'EEEE', { locale: ja });
 
   return (
     <Card className="flex flex-row items-center justify-between p-3 sm:p-4 gap-2 sm:gap-4">
       {/* 日付 */}
       <div className="min-w-[60px] sm:min-w-[70px]">
-        <div className="font-medium text-xs sm:text-sm">{month}月{day}日</div>
+        <div className="font-medium text-xs sm:text-sm">{formattedDate}</div>
         <div className="text-[10px] sm:text-xs text-muted-foreground">
-          {weekDay}曜日 {isToday && '今日'}
+          {weekDay} {isToday(date) && '今日'}
         </div>
       </div>
 
