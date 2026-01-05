@@ -1,7 +1,9 @@
 // src/app/records/_types/index.ts
-export type WeightRecord = {
-  id: string;
-  weight: number;
-  fat: number | null;
-  date: string;
+import type { WeightRecord } from '@/db/schema';
+
+export type { WeightRecord };
+
+export type WeightRecordsPage = {
+  records: WeightRecord[];
+  nextPage: number | undefined;
 };
