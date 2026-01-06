@@ -55,7 +55,7 @@ export function RecordCard({
       </div>
 
       {/* ドロップダウンメニュー */}
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
