@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { RecordCard } from '@/components/ui/record-card';
 import { useWeightRecords } from '../_hooks/useWeightRecords';
-import { RecordCardSkeleton, RecordListSkeleton } from './Loading';
+import { RecordCardSkeleton } from './Loading';
 
 export function RecordList() {
   const {
@@ -13,7 +13,6 @@ export function RecordList() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading,  // ← 追加
     isError,
     error,
   } = useWeightRecords();
@@ -27,11 +26,6 @@ export function RecordList() {
   }, [inView, hasNextPage, fetchNextPage]);
 
   const records = data?.pages.flatMap((page) => page.records) ?? [];
-
-  // ローディング中はスケルトン表示
-  if (isLoading) {
-    return <RecordListSkeleton />;
-  }
 
   if (isError) {
     return (
