@@ -13,8 +13,6 @@ export function RecordList() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isError,
-    error,
   } = useWeightRecords();
 
   const { ref, inView } = useInView();
@@ -26,14 +24,6 @@ export function RecordList() {
   }, [inView, hasNextPage, fetchNextPage]);
 
   const records = data?.pages.flatMap((page) => page.records) ?? [];
-
-  if (isError) {
-    return (
-      <p className="text-center text-red-500">
-        エラー: {error?.message ?? '読み込みに失敗しました'}
-      </p>
-    );
-  }
 
   if (records.length === 0) {
     return <p className="text-center text-gray-500">記録がありません</p>;
