@@ -1,31 +1,27 @@
 // src/app/records/_components/Loading.tsx
-import { Skeleton } from '@/components/ui/skeleton';
-
-export function RecordCardSkeleton() {
-  return (
-    <div className="flex items-center justify-between p-3 sm:p-4 border rounded-xl">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-3 w-12" />
-      </div>
-      <div className="text-center space-y-2">
-        <Skeleton className="h-3 w-8" />
-        <Skeleton className="h-4 w-14" />
-      </div>
-      <div className="text-center space-y-2">
-        <Skeleton className="h-3 w-10" />
-        <Skeleton className="h-4 w-12" />
-      </div>
-      <Skeleton className="h-6 w-6" />
-    </div>
-  );
-}
-
 export function RecordListSkeleton() {
   return (
-    <div className="space-y-2 sm:space-y-3">
-      {[...Array(5)].map((_, i) => (
-        <RecordCardSkeleton key={i} />
+    <div className="space-y-3">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl animate-pulse"
+        >
+          <div className="flex flex-col gap-1">
+            <div className="h-5 bg-gray-200 rounded w-16" />
+            <div className="h-3 bg-gray-200 rounded w-10" />
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="flex flex-col items-center gap-1">
+              <div className="h-3 bg-gray-200 rounded w-8" />
+              <div className="h-5 bg-gray-200 rounded w-14" />
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <div className="h-3 bg-gray-200 rounded w-10" />
+              <div className="h-5 bg-gray-200 rounded w-12" />
+            </div>
+          </div>
+        </div>
       ))}
     </div>
   );
