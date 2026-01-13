@@ -1,4 +1,9 @@
-import type { WeightRecordDto } from "../_actions/getWeightRecords";
+type WeightRecordDto = {
+  id: string;
+  weight: number;
+  fat: number | null;
+  date: string;
+};
 
 type Props = {
   record: WeightRecordDto;
