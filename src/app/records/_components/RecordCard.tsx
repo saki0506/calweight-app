@@ -1,3 +1,4 @@
+//src/app/records/_components/RecordCard.tsx
 type WeightRecordDto = {
   id: string;
   weight: number;

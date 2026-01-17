@@ -1,9 +1,10 @@
 // src/app/records/_hooks/useWeightRecords.ts
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { getWeightRecordsByUserId } from "@/db/queries/weight-records";
 
-async function fetchWeightRecords(cursor?: string) {
+const PAGE_SIZE = 10;
+
+async function fetchWeightRecords(pageParam: number) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -11,19 +12,31 @@ async function fetchWeightRecords(cursor?: string) {
     throw new Error("ログインが必要です");
   }
 
-  return getWeightRecordsByUserId({
-    userId: user.id,
-    cursor,
-    limit: 10,
-  });
+  const from = pageParam * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  const { data, error } = await supabase
+    .from("weight_records")
+    .select("id, weight, fat, date")
+    .eq("user_id", user.id)
+    .is("deleted_at", null)
+    .order("date", { ascending: false })
+    .range(from, to);
+
+  if (error) throw error;
+
+  return {
+    records: data,
+    nextPage: data.length === PAGE_SIZE ? pageParam + 1 : undefined,
+  };
 }
 
 export function useWeightRecords() {
   return useSuspenseInfiniteQuery({
     queryKey: ["weightRecords"],
     queryFn: ({ pageParam }) => fetchWeightRecords(pageParam),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextPage,
     select: (data) =>
       data.pages.flatMap((page) =>
         page.records.map((record) => ({

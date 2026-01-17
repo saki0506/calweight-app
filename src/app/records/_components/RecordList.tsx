@@ -43,6 +43,9 @@ export function RecordList() {
             {isFetchingNextPage && (
               <span className="text-sm text-gray-500">読み込み中...</span>
             )}
+            {!hasNextPage && records.length > 0 && (
+              <span className="text-sm text-gray-500">すべて読み込みました</span>
+            )}
           </div>
         </>
       )}
