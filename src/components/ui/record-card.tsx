@@ -1,6 +1,12 @@
 // src/components/ui/record-card.tsx
 import { Card } from '@/components/ui/card';
-import { EllipsisVertical } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 import { ja } from 'date-fns/locale';
 
@@ -8,9 +14,17 @@ type RecordCardProps = {
   date: Date;
   weight: number;
   bodyFatPercentage: number;
+  onEdit?: () => void;
+  onDelete?: () => void;
 };
 
-export function RecordCard({ date, weight, bodyFatPercentage }: RecordCardProps) {
+export function RecordCard({
+  date,
+  weight,
+  bodyFatPercentage,
+  onEdit,
+  onDelete,
+}: RecordCardProps) {
   const formattedDate = format(date, 'M月d日', { locale: ja });
   const weekDay = format(date, 'EEEE', { locale: ja });
 
@@ -40,11 +54,37 @@ export function RecordCard({ date, weight, bodyFatPercentage }: RecordCardProps)
         </div>
       </div>
 
-      {/* メニューアイコン */}
-      <EllipsisVertical
-        className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400"
-        strokeWidth={1.5}
-      />
+      {/* ドロップダウンメニュー */}
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+            aria-label="メニューを開く"
+          >
+            <EllipsisVertical
+              className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400"
+              strokeWidth={1.5}
+            />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          side="right"
+          sideOffset={24}
+          alignOffset={-20}
+          avoidCollisions={false}
+        >
+          <DropdownMenuItem onClick={onEdit}>
+            <Pencil className="mr-2 h-4 w-4" />
+            編集
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onDelete} className="text-red-600">
+            <Trash2 className="mr-2 h-4 w-4" />
+            削除
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </Card>
   );
 }

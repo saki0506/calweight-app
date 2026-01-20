@@ -1,16 +1,25 @@
 // src/app/records/page.tsx
-'use client';
+"use client";
 
-import { Suspense } from 'react';
-import { useQueryState } from 'nuqs';
-import { ContentCard } from '@/components/ui/auth-card';
-import { BottomNavigation, TabId } from '@/components/ui/bottom-navigation';
-import { RecordListSkeleton } from './_components/Loading';
-import { RecordList } from './_components/RecordList';
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
+import { ErrorBoundary } from "react-error-boundary";
+import { useQueryState } from "nuqs";
+import { ContentCard } from "@/components/ui/auth-card";
+import { BottomNavigation, TabId } from "@/components/ui/bottom-navigation";
+import { RecordListSkeleton } from "./_components/Loading";
+
+const RecordList = dynamic(
+  () => import("./_components/RecordList").then((mod) => ({ default: mod.RecordList })),
+  {
+    ssr: false,
+    loading: () => <RecordListSkeleton />,
+  }
+);
 
 export default function RecordsPage() {
-  const [activeTab, setActiveTab] = useQueryState('tab', {
-    defaultValue: 'graph' as TabId,
+  const [activeTab, setActiveTab] = useQueryState("tab", {
+    defaultValue: "graph" as TabId,
   });
 
   return (
@@ -23,9 +32,15 @@ export default function RecordsPage() {
             </span>
           </div>
 
-          <Suspense fallback={<RecordListSkeleton />}>
-            <RecordList />
-          </Suspense>
+          <ErrorBoundary
+            fallback={
+              <p className="text-center text-red-500">読み込みに失敗しました</p>
+            }
+          >
+            <Suspense fallback={<RecordListSkeleton />}>
+              <RecordList />
+            </Suspense>
+          </ErrorBoundary>
         </ContentCard>
       </div>
 

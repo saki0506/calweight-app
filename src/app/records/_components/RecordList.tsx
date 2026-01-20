@@ -1,64 +1,58 @@
 // src/app/records/_components/RecordList.tsx
-'use client';
-
-import { useEffect } from 'react';
-import { useInView } from 'react-intersection-observer';
-import { RecordCard } from '@/components/ui/record-card';
-import { useWeightRecords } from '../_hooks/useWeightRecords';
-import { RecordCardSkeleton } from './Loading';
+"use client";
+import { useEffect } from "react";
+import { useInView } from "react-intersection-observer";
+import { useWeightRecords } from "../_hooks/useWeightRecords";
+import { RecordCard } from "@/components/ui/record-card";
 
 export function RecordList() {
+  const { ref, inView } = useInView({ threshold: 0, rootMargin: "100px" });
   const {
-    data,
+    data: records,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isError,
-    error,
   } = useWeightRecords();
 
-  const { ref, inView } = useInView();
-
   useEffect(() => {
-    if (inView && hasNextPage) {
+    if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, fetchNextPage]);
-
-  const records = data?.pages.flatMap((page) => page.records) ?? [];
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (isError) {
     return (
-      <p className="text-center text-red-500">
-        エラー: {error?.message ?? '読み込みに失敗しました'}
-      </p>
+      <div className="p-3 bg-red-50 text-red-500 rounded-lg text-sm">
+        データの取得に失敗しました
+      </div>
     );
   }
 
   if (records.length === 0) {
-    return <p className="text-center text-gray-500">記録がありません</p>;
+    return (
+      <div className="text-center py-12 text-gray-500">記録がありません</div>
+    );
   }
 
   return (
-    <div className="space-y-2 sm:space-y-3">
+    <div className="space-y-3">
       {records.map((record) => (
         <RecordCard
           key={record.id}
           date={new Date(record.date)}
           weight={Number(record.weight)}
-          bodyFatPercentage={record.fat ? Number(record.fat) : 0}
+          bodyFatPercentage={record.fat != null ? Number(record.fat) : 0}
         />
       ))}
-
-      <div ref={ref} className="h-4" />
-
-      {isFetchingNextPage && <RecordCardSkeleton />}
-
-      {!hasNextPage && records.length > 0 && (
-        <p className="text-center text-gray-400 text-sm">
-          すべて読み込みました
-        </p>
-      )}
+      <div ref={ref} className="h-10 flex items-center justify-center">
+        {isFetchingNextPage && (
+          <span className="text-sm text-gray-500">読み込み中...</span>
+        )}
+        {!hasNextPage && records.length > 0 && (
+          <span className="text-sm text-gray-500">すべて読み込みました</span>
+        )}
+      </div>
     </div>
   );
 }
