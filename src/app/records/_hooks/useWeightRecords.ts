@@ -13,21 +13,21 @@ async function fetchWeightRecords(cursor?: Cursor) {
     throw new Error("ログインが必要です");
   }
 
-  let query = supabase
+  const baseQuery = supabase
     .from("weight_records")
     .select("id, weight, fat, date")
     .eq("user_id", user.id)
-    .is("deleted_at", null)
+    .is("deleted_at", null);
+
+  // 「同じ日付でIDが小さい」または「日付が古い」レコードを取得
+  const query = cursor
+    ? baseQuery.or(`date.lt.${cursor.date},and(date.eq.${cursor.date},id.lt.${cursor.id})`)
+    : baseQuery;
+
+  const { data, error } = await query
     .order("date", { ascending: false })
     .order("id", { ascending: false })
     .limit(PAGE_SIZE + 1);
-
-  if (cursor) {
-    // 「同じ日付でIDが小さい」または「日付が古い」レコードを取得
-    query = query.or(`date.lt.${cursor.date},and(date.eq.${cursor.date},id.lt.${cursor.id})`);
-  }
-
-  const { data, error } = await query;
 
   if (error) throw error;
 
