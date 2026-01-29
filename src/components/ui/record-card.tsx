@@ -73,7 +73,6 @@ export function RecordCard({
           side="right"
           sideOffset={24}
           alignOffset={-20}
-          avoidCollisions={false}
         >
           <DropdownMenuItem onClick={onEdit}>
             <Pencil className="mr-2 h-4 w-4" />
