@@ -3,7 +3,7 @@ import type { WeightRecord } from '@/db/schema';
 
 export type { WeightRecord };
 
-export type WeightRecordsPage = {
-  records: WeightRecord[];
-  nextPage: number | undefined;
+export type Cursor = {
+  date: string;
+  id: string;
 };
