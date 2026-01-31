@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -21,28 +20,11 @@ import {
 } from "@/components/ui/form";
 import { NumberPad } from "@/app/weight-input/_components/number-pad";
 import { WeightRecordDto } from "../_types";
+import { editRecordSchema, EditRecordFormValues } from "./schema";
 
-const editRecordSchema = z.object({
-  weight: z
-    .string()
-    .min(1, "体重を入力してください")
-    .refine((val) => !isNaN(Number(val)), "数値を入力してください")
-    .refine((val) => Number(val) >= 20, "20kg以上で入力してください")
-    .refine((val) => Number(val) <= 300, "300kg以下で入力してください"),
-  fat: z
-    .string()
-    .refine((val) => val === "" || !isNaN(Number(val)), "数値を入力してください")
-    .refine((val) => val === "" || Number(val) >= 1, "1%以上で入力してください")
-    .refine((val) => val === "" || Number(val) <= 60, "60%以下で入力してください"),
-});
-
-type EditRecordFormValues = z.infer<typeof editRecordSchema>;
-
-type WeightRecordDto = {
-  id: string;
-  weight: number;
-  fat: number | null;
-  date: string;
+const defaultValues: EditRecordFormValues = {
+  weight: "",
+  fat: "",
 };
 
 type Props = {
@@ -58,10 +40,7 @@ export function EditRecordModal({ record, open, onOpenChange }: Props) {
 
   const form = useForm<EditRecordFormValues>({
     resolver: zodResolver(editRecordSchema),
-    defaultValues: {
-      weight: "",
-      fat: "",
-    },
+    defaultValues,
     mode: "onChange",
   });
 
@@ -126,7 +105,7 @@ export function EditRecordModal({ record, open, onOpenChange }: Props) {
   };
 
   const onSubmit = (data: EditRecordFormValues) => {
-    // PR2で実装：更新処理
+    // TODO: PR2で更新APIを実装する
     console.log("更新データ:", {
       id: record?.id,
       weight: Number(data.weight),

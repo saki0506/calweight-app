@@ -69,10 +69,10 @@ export function RecordCard({
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          align="start"
-          side="right"
-          sideOffset={24}
-          alignOffset={-20}
+          align="end"
+          side="bottom"
+          alignOffset={-15}
+          sideOffset={19}
         >
           <DropdownMenuItem onClick={onEdit}>
             <Pencil className="mr-2 h-4 w-4" />
