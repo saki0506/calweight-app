@@ -21,6 +21,7 @@ import {
 import { NumberPad } from "@/app/weight-input/_components/number-pad";
 import { WeightRecordDto } from "../_types";
 import { editRecordSchema, EditRecordFormValues } from "./schema";
+import { useUpdateRecord } from "../_hooks/useUpdateRecord";
 
 const defaultValues: EditRecordFormValues = {
   weight: "",
@@ -37,6 +38,7 @@ type ActiveField = "weight" | "fat";
 
 export function EditRecordModal({ record, open, onOpenChange }: Props) {
   const [activeField, setActiveField] = useState<ActiveField>("weight");
+  const { mutate: updateRecord, isPending } = useUpdateRecord();
 
   const form = useForm<EditRecordFormValues>({
     resolver: zodResolver(editRecordSchema),
@@ -105,13 +107,18 @@ export function EditRecordModal({ record, open, onOpenChange }: Props) {
   };
 
   const onSubmit = (data: EditRecordFormValues) => {
-    // TODO: PR2で更新APIを実装する
-    console.log("更新データ:", {
-      id: record?.id,
-      weight: Number(data.weight),
-      fat: data.fat ? Number(data.fat) : null,
-    });
-    onOpenChange(false);
+    if (!record) return;
+
+    updateRecord(
+      {
+        id: record.id,
+        weight: Number(data.weight),
+        fat: data.fat ? Number(data.fat) : null,
+      },
+      {
+        onSuccess: () => onOpenChange(false),
+      }
+    );
   };
 
   return (
@@ -202,15 +209,17 @@ export function EditRecordModal({ record, open, onOpenChange }: Props) {
                 type="button"
                 variant="outline"
                 className="flex-1"
+                disabled={isPending}
                 onClick={() => onOpenChange(false)}
               >
                 キャンセル
               </Button>
               <Button
                 type="submit"
+                disabled={isPending}
                 className="flex-1 bg-[#FF9BAA] hover:bg-[#FF6B8A] text-gray-800"
               >
-                保存
+                {isPending ? '保存中...' : '保存'}
               </Button>
             </div>
           </form>
