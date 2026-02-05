@@ -6,14 +6,8 @@ import { useInView } from "react-intersection-observer";
 import { useWeightRecords } from "../_hooks/useWeightRecords";
 import { RecordCard } from "@/components/ui/record-card";
 import { EditRecordModal } from "./EditRecordModal";
+import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { WeightRecordDto } from "../_types";
-
-type WeightRecordDto = {
-  id: string;
-  weight: number;
-  fat: number | null;
-  date: string;
-};
 
 export function RecordList() {
   const { ref, inView } = useInView({ threshold: 0, rootMargin: "100px" });
@@ -29,14 +23,18 @@ export function RecordList() {
   const [editingRecord, setEditingRecord] = useState<WeightRecordDto | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  // 削除モーダル用の状態
+  const [deletingRecord, setDeletingRecord] = useState<WeightRecordDto | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   const handleEdit = (record: WeightRecordDto) => {
     setEditingRecord(record);
     setIsEditModalOpen(true);
   };
 
   const handleDelete = (record: WeightRecordDto) => {
-    // PR2で実装
-    console.log("削除:", record.id);
+    setDeletingRecord(record);
+    setIsDeleteModalOpen(true);
   };
 
   useEffect(() => {
@@ -86,6 +84,12 @@ export function RecordList() {
         record={editingRecord}
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
+      />
+
+      <DeleteConfirmModal
+        record={deletingRecord}
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
       />
     </>
   );
