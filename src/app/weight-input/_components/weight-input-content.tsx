@@ -26,7 +26,7 @@ export function WeightInputContent() {
   const [activeTab, setActiveTab] = useQueryState('tab', {
     defaultValue: 'edit' as TabId,
   });
-  const [selectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const { mutate, isPending, error } = useSaveWeightRecord();
 
   const form = useForm<WeightInputFormData>({
@@ -127,7 +127,7 @@ export function WeightInputContent() {
             {/* 上部カード：日付と入力フィールド */}
             <AuthCard>
               <div className="flex flex-col gap-3 md:gap-4">
-                <DateDisplay date={selectedDate} />
+                <DateDisplay date={selectedDate} onDateChange={setSelectedDate} />
 
                 <div className="flex flex-col gap-2 md:gap-3">
                   {/* 体重入力 */}
