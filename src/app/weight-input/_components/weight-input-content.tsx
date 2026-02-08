@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryState } from 'nuqs';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AuthCard } from '@/components/ui/auth-card';
@@ -28,6 +29,7 @@ export function WeightInputContent() {
   });
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { mutate, isPending, error } = useSaveWeightRecord();
+  const router = useRouter();
 
   const form = useForm<WeightInputFormData>({
     resolver: zodResolver(weightInputSchema),
@@ -44,7 +46,6 @@ export function WeightInputContent() {
   const currentValue = activeField === 'weight' ? weight : bodyFat;
   const errors = form.formState.errors;
 
-  // 数字と小数点のみ許可するフィルター
   const filterNumericInput = (value: string): string => {
     let filtered = value.replace(/[^0-9.]/g, '');
     const parts = filtered.split('.');
@@ -57,13 +58,11 @@ export function WeightInputContent() {
     return filtered;
   };
 
-  // setValue + trigger をまとめた関数
   const setFieldValue = (field: ActiveField, value: string) => {
     form.setValue(field, value);
     form.trigger(field);
   };
 
-  // キーボード入力のハンドラ
   const handleKeyboardInput = (field: ActiveField, value: string) => {
     const filtered = filterNumericInput(value);
     setFieldValue(field, filtered);
@@ -113,7 +112,20 @@ export function WeightInputContent() {
   };
 
   const handleTabChange = (tab: TabId) => {
-    setActiveTab(tab);
+    switch (tab) {
+      case 'graph':
+        router.push('/graph');
+        break;
+      case 'edit':
+        setActiveTab(tab);
+        break;
+      case 'calendar':
+        router.push('/records');
+        break;
+      case 'settings':
+        router.push('/settings');
+        break;
+    }
   };
 
   return (
@@ -124,13 +136,11 @@ export function WeightInputContent() {
             onSubmit={form.handleSubmit(onSubmit, onValidationError)}
             className="w-full max-w-sm md:max-w-md flex flex-col gap-3 md:gap-4"
           >
-            {/* 上部カード：日付と入力フィールド */}
             <AuthCard>
               <div className="flex flex-col gap-3 md:gap-4">
                 <DateDisplay date={selectedDate} onDateChange={setSelectedDate} />
 
                 <div className="flex flex-col gap-2 md:gap-3">
-                  {/* 体重入力 */}
                   <FormField
                     control={form.control}
                     name="weight"
@@ -163,7 +173,6 @@ export function WeightInputContent() {
                     )}
                   />
 
-                  {/* 体脂肪率入力 */}
                   <FormField
                     control={form.control}
                     name="bodyFat"
@@ -197,7 +206,6 @@ export function WeightInputContent() {
                   />
                 </div>
 
-                {/* エラーメッセージ */}
                 {error && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-sm text-red-600">{error.message}</p>
@@ -206,7 +214,6 @@ export function WeightInputContent() {
               </div>
             </AuthCard>
 
-            {/* 下部カード：テンキーパッド + OKボタン */}
             <AuthCard>
               <div className="flex flex-col gap-4">
                 <NumberPad
@@ -215,7 +222,6 @@ export function WeightInputContent() {
                   onDecimal={handleDecimal}
                 />
 
-                {/* OKボタン */}
                 <Button
                   type="submit"
                   className="w-full bg-[#FF9BAA] hover:bg-[#FF6B8A] text-gray-800 rounded-lg"
