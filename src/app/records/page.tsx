@@ -1,10 +1,9 @@
 // src/app/records/page.tsx
 "use client";
-
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { ErrorBoundary } from "react-error-boundary";
-import { useQueryState } from "nuqs";
+import { useRouter } from "next/navigation";
 import { ContentCard } from "@/components/ui/auth-card";
 import { BottomNavigation, TabId } from "@/components/ui/bottom-navigation";
 import { RecordListSkeleton } from "./_components/Loading";
@@ -18,9 +17,23 @@ const RecordList = dynamic(
 );
 
 export default function RecordsPage() {
-  const [activeTab, setActiveTab] = useQueryState("tab", {
-    defaultValue: "graph" as TabId,
-  });
+  const router = useRouter();
+
+  const handleTabChange = (tab: TabId) => {
+    switch (tab) {
+      case "graph":
+        router.push("/graph");
+        break;
+      case "edit":
+        router.push("/weight-input");
+        break;
+      case "calendar":
+        break;
+      case "settings":
+        router.push("/settings");
+        break;
+    }
+  };
 
   return (
     <div className="min-h-screen pb-20 p-4 sm:p-6 md:p-8">
@@ -31,7 +44,6 @@ export default function RecordsPage() {
               記録一覧
             </span>
           </div>
-
           <ErrorBoundary
             fallback={
               <p className="text-center text-red-500">読み込みに失敗しました</p>
@@ -43,10 +55,9 @@ export default function RecordsPage() {
           </ErrorBoundary>
         </ContentCard>
       </div>
-
       <BottomNavigation
-        activeTab={activeTab as TabId}
-        onTabChange={(tab) => setActiveTab(tab)}
+        activeTab="calendar"
+        onTabChange={handleTabChange}
       />
     </div>
   );
