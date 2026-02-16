@@ -1,3 +1,6 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { ChartLine, PenSquare, Calendar, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +22,8 @@ export function BottomNavigation({
   activeTab,
   onTabChange,
 }: BottomNavigationProps) {
+  const router = useRouter();
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 flex justify-around items-center py-3 md:py-4 bg-[#D9D9D9]">
       {tabs.map((tab) => {
@@ -27,7 +32,13 @@ export function BottomNavigation({
           <button
             key={tab.id}
             type="button"
-            onClick={() => onTabChange(tab.id)}
+            onClick={() => {
+              if (tab.id === 'settings') {
+                router.push('/goal-weight');
+                return;
+              }
+              onTabChange(tab.id);
+            }}
             className={cn(
               'p-2 md:p-3 rounded-lg transition-colors',
               activeTab === tab.id

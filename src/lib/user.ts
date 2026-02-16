@@ -30,3 +30,29 @@ export async function updateProfile(data: {
 
   return result;
 }
+
+export async function updateTargetWeight(data: {
+  targetWeight: string;
+}) {
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getClaims();
+
+  if (authData?.claims?.sub === undefined) {
+    throw new Error('認証されていません');
+  }
+
+  const { data: result, error } = await supabase
+    .from('users')
+    .update({
+      target_weight: data.targetWeight,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', authData.claims.sub)
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return result;
+}
