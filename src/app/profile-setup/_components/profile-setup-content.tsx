@@ -32,7 +32,7 @@ export function ProfileSetupContent() {
   const mutation = useMutation({
     mutationFn: (data: ProfileSetupFormData) => updateProfile(data),
     onSuccess: () => {
-      router.push('/dashboard');
+      router.push('/login');
     },
   });
 
