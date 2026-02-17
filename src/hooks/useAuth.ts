@@ -35,8 +35,8 @@ export function useSignUp() {
       if (error) throw error;
 
       return data;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "エラーが発生しました");
       throw err;
     } finally {
       setIsLoading(false);
@@ -67,8 +67,8 @@ export function useSignIn() {
       if (error) throw error;
 
       return data;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "エラーが発生しました");
       throw err;
     } finally {
       setIsLoading(false);
@@ -94,8 +94,8 @@ export function useSignOut() {
       const { error } = await supabase.auth.signOut();
 
       if (error) throw error;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "エラーが発生しました");
       throw err;
     } finally {
       setIsLoading(false);
@@ -123,8 +123,8 @@ export function useGetCurrentUser() {
       if (error) throw error;
 
       return user;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "エラーが発生しました");
       throw err;
     } finally {
       setIsLoading(false);
