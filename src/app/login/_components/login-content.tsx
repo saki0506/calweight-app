@@ -30,7 +30,7 @@ export function LoginContent() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await signIn(data);
-      router.push('/profile-setup');
+      router.push('/weight-input');
     } catch (err) {
       console.error('Login error:', err);
     }
