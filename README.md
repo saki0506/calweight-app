@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CalWeight
 
-## Getting Started
+体重・体脂肪率を記録・管理できるWebアプリケーションです。
 
-First, run the development server:
+## 背景・目的
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- ユーザーが体重・体脂肪率を記録できるWebアプリ
+- グラフで体重推移を振り返り、健康管理を支援
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 対象ユーザー
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- スマホ/PC両方を利用する一般ユーザー
+- 健康管理やダイエットに関心がある人
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## デプロイURL
 
-## Learn More
+https://calweight-app.vercel.app
 
-To learn more about Next.js, take a look at the following resources:
+## 機能
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- ユーザー登録・ログイン（Supabase Auth）
+- 体重・体脂肪率の入力（テンキー・キーボード対応）
+- 記録一覧の表示・削除
+- グラフ表示（体重・体脂肪率の推移）
+- 目標体重の設定
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 使用技術
 
-## Deploy on Vercel
+| カテゴリ | 技術 |
+|---------|------|
+| フレームワーク | Next.js 15（App Router） |
+| 言語 | TypeScript |
+| スタイリング | Tailwind CSS |
+| UIコンポーネント | shadcn/ui |
+| データベース・認証 | Supabase |
+| グラフ | Chart.js（react-chartjs-2） |
+| デプロイ | Vercel |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 今後の予定
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- カレンダー表示機能（FullCalendar）
+  - カレンダーのUI
+  - データの取得
+- 共通エラーページ（404 / 401 / 500）
