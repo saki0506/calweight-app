@@ -3,7 +3,7 @@
 
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 type WeightRecord = {
   id: string
@@ -13,16 +13,10 @@ type WeightRecord = {
 }
 
 export default function CalendarPage() {
-  const [records, setRecords] = useState<WeightRecord[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    fetch('/api/weight-records')
-      .then(res => res.json())
-      .then(data => setRecords(data))
-      .catch(err => console.error(err))
-      .finally(() => setIsLoading(false))
-  }, [])
+  const { data: records = [], isLoading } = useQuery<WeightRecord[]>({
+    queryKey: ['weight-records'],
+    queryFn: () => fetch('/api/weight-records').then(res => res.json()),
+  })
 
   if (isLoading) return <div>読み込み中...</div>
 
