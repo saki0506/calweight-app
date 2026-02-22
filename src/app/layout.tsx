@@ -26,9 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja">
+    <html lang="ja" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#FFB6C1] min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#FFB6C1] h-full`}
       >
         <QueryProvider>
           <NuqsAdapter>{children}</NuqsAdapter>
