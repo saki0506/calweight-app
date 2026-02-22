@@ -281,3 +281,5 @@ export default function CalendarPage() {
     </div>
   )
 }
+
+//FIXME: Refactor this
