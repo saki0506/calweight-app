@@ -37,6 +37,10 @@ export function BottomNavigation({
                 router.push('/goal-weight');
                 return;
               }
+              if (tab.id === 'calendar') {
+                router.push('/calendar');
+                return;
+              }
               onTabChange(tab.id);
             }}
             className={cn(
