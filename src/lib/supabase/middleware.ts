@@ -40,7 +40,7 @@ export async function updateSession(request: NextRequest) {
   );
 
   // セッションの更新
-  await supabase.auth.getClaims();
+  await supabase.auth.getSession();
 
   return supabaseResponse;
 }
